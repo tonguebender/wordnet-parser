@@ -12,9 +12,13 @@ const DATA_DIR = process.env.DATA_DIR || './dict/';
 
 
 function processPos(pos) {
-  return readFile(path.resolve(DATA_DIR, `index.${pos}`))
+  return Promise
+    .all([
+      readFile(path.resolve(DATA_DIR, `index.${pos}`)),
+      readFile(path.resolve(DATA_DIR, `data.${pos}`))
+    ])
     .then(data => {
-      return indexParser(data.toString());
+      return indexParser(data[0].toString());
     })
     .catch(err => {
       console.log('ERROR:', err);
@@ -22,4 +26,4 @@ function processPos(pos) {
 }
 
 processPos(WORD_NET_POS[0])
-  .then(res => console.log('result:', res), err => console.log('error:', err));
+  .then(res => console.log('result:', res.slice(1000,1001)), err => console.log('error:', err));
