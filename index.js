@@ -11,11 +11,11 @@ const WORD_NET_POS = ['adj', 'adv', 'noun', 'verb'];
 const DATA_DIR = process.env.DATA_DIR || './dict/';
 
 
-function processPos(pos) {
+function processPos(dataDir = DATA_DIR, pos) {
   return Promise
     .all([
-      readFile(path.resolve(DATA_DIR, `index.${pos}`)),
-      readFile(path.resolve(DATA_DIR, `data.${pos}`))
+      readFile(path.resolve(dataDir, `index.${pos}`)),
+      readFile(path.resolve(dataDir, `data.${pos}`))
     ])
     .then(data => {
       return Promise.all([
@@ -30,6 +30,7 @@ function processPos(pos) {
       return index.map(lemma => {
         return {
           lemma: lemma.lemma,
+          pos: pos,
           gloss: lemma.synset_offset.map(offset => data[offset].gloss.trim())
         }
       })
@@ -39,9 +40,6 @@ function processPos(pos) {
     });
 }
 
-processPos(WORD_NET_POS[0])
-  .then(res => {
-    console.log('result:', res.slice(10000, 10101))
-  }, err => {
-    console.log('error:', err);
-  });
+module.exports.processAll = function({dataDir}) {
+    return Promise.all(WORD_NET_POS.map(pos => processPos(dataDir, pos)));
+};
